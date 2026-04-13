@@ -11,7 +11,7 @@ import rewardsEngineImg from "@/assets/screenshots/rewards-engine.jpg";
 import taraHeroImg from "@/assets/screenshots/tara-voice-agent.jpg";
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "@/const";
+import { baseURL } from "@/const";
 import {
   Target, Shield, Trophy, Zap, Users, BarChart3, ChevronDown, ChevronRight,
   Star, Award, CheckCircle2, ArrowRight, Clock, Eye, TrendingUp, Lock,
@@ -951,7 +951,7 @@ const BookDemo = () => {
     company: "",
     jobTitle: "",
     sizeOfOrganization: "",
-    phone: "",
+    phoneNumber: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -970,11 +970,11 @@ const BookDemo = () => {
       company: form.company,
       jobTitle: form.jobTitle,
       sizeOfOrganization: form.sizeOfOrganization,
-      phone: form.phone,
+      phoneNumber: form.phoneNumber,
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/landing/requestDemo`, {
+      const response = await fetch(baseURL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -992,7 +992,7 @@ const BookDemo = () => {
           company: "",
           jobTitle: "",
           sizeOfOrganization: "",
-          phone: "",
+          phoneNumber: "",
         });
       } else {
         setError(typeof data?.message === "string" ? data.message : "Something went wrong in network");
@@ -1057,7 +1057,7 @@ const BookDemo = () => {
                 <option value="201-500">201–500</option>
                 <option value="500+">500+</option>
               </select>
-              <input placeholder="Phone (optional)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-3 bg-surface-3 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mb-5" />
+              <input placeholder="Phone (optional)" value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} className="w-full px-4 py-3 bg-surface-3 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mb-5" />
               <button type="submit" className="w-full py-4 bg-primary text-primary-foreground text-base font-bold rounded-lg hover:bg-primary-dark transition-all shadow-lg hover:shadow-xl">
                 {loading ? "Sending..." : "Schedule My Demo →"}
               </button>

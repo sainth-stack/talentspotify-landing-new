@@ -1,72 +1,91 @@
 import ScrollReveal from "@/components/ScrollReveal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Upload } from "lucide-react";
+import { landingApiBase, companyIdForLanding } from "@/const";
 
-const jobs = [
-  {
-    title: "Senior AI/ML Engineer — NLP",
-    dept: "Engineering",
-    location: "Bengaluru / Remote",
-    type: "Full-time",
-    desc: "Build and fine-tune NLP models that power TARA's bias detection engine.",
-    jd: {
-      about: "You'll work on the core AI engine that analyses performance review conversations for bias patterns. This role is central to our mission of making reviews fair.",
-      tasks: ["Design and train NLP models for bias detection in multilingual conversations", "Build real-time inference pipelines for live review analysis", "Collaborate with the product team to ship new AI features", "Improve model accuracy across Tamil, Telugu, Kannada, and Hindi"],
-      requirements: ["3+ years in NLP/ML with production experience", "Strong Python, PyTorch/TensorFlow", "Experience with transformer models and fine-tuning", "Familiarity with speech-to-text systems is a plus"],
-      comp: "Competitive salary + equity. ₹30K annual learning budget. Health coverage for you and family.",
-    },
-  },
-  {
-    title: "Product Manager — Performance Intelligence",
-    dept: "Product",
-    location: "Bengaluru / Remote",
-    type: "Full-time",
-    desc: "Own the product roadmap for our AI-powered performance review platform.",
-    jd: {
-      about: "Lead product strategy for our core performance intelligence module, working closely with HR leaders and engineering.",
-      tasks: ["Define product roadmap based on customer research", "Write detailed PRDs and work with engineering sprints", "Analyse product metrics and iterate", "Conduct user interviews with CHRO/VP-level stakeholders"],
-      requirements: ["4+ years product management, preferably B2B SaaS", "Understanding of HR processes and performance management", "Data-driven decision making", "Excellent communication skills"],
-      comp: "Competitive salary + equity. Remote-first culture.",
-    },
-  },
-  {
-    title: "Enterprise Account Executive",
-    dept: "Sales",
-    location: "Bengaluru / Remote",
-    type: "Full-time",
-    desc: "Close enterprise deals and build relationships with India's largest companies.",
-    jd: {
-      about: "Drive enterprise sales for TalentSpotify, targeting 500+ employee organisations across India.",
-      tasks: ["Manage full sales cycle from prospecting to close", "Build relationships with CHRO and VP-level buyers", "Conduct product demos and ROI presentations", "Collaborate with marketing on pipeline generation"],
-      requirements: ["3+ years enterprise B2B SaaS sales", "Experience selling to HR/People teams", "Track record of exceeding quotas", "Strong presentation skills"],
-      comp: "Competitive base + uncapped commission + equity.",
-    },
-  },
-  {
-    title: "HR Science Researcher",
-    dept: "Research",
-    location: "Bengaluru / Remote",
-    type: "Full-time",
-    desc: "Research cognitive biases in performance reviews and inform our AI models.",
-    jd: {
-      about: "Bridge the gap between I/O psychology research and our AI platform. Your work directly shapes how TARA detects and flags bias.",
-      tasks: ["Research cognitive biases in workplace evaluations", "Design frameworks for fair performance assessment", "Collaborate with ML engineers on bias detection models", "Publish findings and represent TalentSpotify at conferences"],
-      requirements: ["Masters/PhD in I/O Psychology, Organisational Behaviour, or related field", "Published research in performance management or bias", "Quantitative research methods experience", "Interest in AI/ML applications"],
-      comp: "Competitive salary + equity. Conference budget included.",
-    },
-  },
-];
+type ApiJob = {
+  _id: string;
+  title: string;
+  location?: string;
+  description?: string;
+};
+
+const emptyForm = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  company: "",
+  notice: "",
+  experience: "",
+  linkedin: "",
+  portfolio: "",
+  why: "",
+};
 
 const Careers = () => {
-  const [openJob, setOpenJob] = useState<number | null>(null);
-  const [applyForm, setApplyForm] = useState({
-    firstName: "", lastName: "", email: "", phone: "", company: "", notice: "", experience: "", linkedin: "", portfolio: "", why: "",
-  });
+  const [jobs, setJobs] = useState<ApiJob[]>([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
+  const [openJob, setOpenJob] = useState<string | null>(null);
+  const [applyForm, setApplyForm] = useState(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleApply = (e: React.FormEvent, jobTitle: string) => {
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${landingApiBase}/jobs`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (cancelled) return;
+        if (json?.success && Array.isArray(json.data)) {
+          setJobs(json.data);
+        } else {
+          setJobs([]);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setJobs([]);
+      })
+      .finally(() => {
+        if (!cancelled) setJobsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleApply = async (e: React.FormEvent, jobId: string) => {
     e.preventDefault();
-    console.log(`Application for ${jobTitle}:`, applyForm);
-    alert("Thank you! We review every application within 5 business days.");
+    setSubmitting(true);
+    const url = `${landingApiBase}/jobs/${jobId}/apply`;
+    const payload = {
+      name: `${applyForm.firstName} ${applyForm.lastName}`.trim(),
+      email: applyForm.email,
+      phone: applyForm.phone,
+      company: applyForm.company,
+      linkedinURL: applyForm.linkedin,
+      cvURL: "",
+      ...(companyIdForLanding ? { companyId: companyIdForLanding } : {}),
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.success) {
+        alert("Application submitted successfully!");
+        setApplyForm(emptyForm);
+        setOpenJob(null);
+      } else {
+        alert(typeof data?.message === "string" ? data.message : "Something went wrong.");
+      }
+    } catch {
+      alert("An error occurred while submitting the form. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -122,87 +141,82 @@ const Careers = () => {
         </div>
       </section>
 
-      {/* Open Roles */}
+      {/* Open Roles — same API as legacy talent-spotify-landing (GET /jobs, POST /jobs/:id/apply) */}
       <section className="py-24 bg-muted/30 border-t border-border">
         <div className="container max-w-4xl">
           <ScrollReveal><h2 className="text-3xl font-extrabold text-foreground tracking-tight text-center mb-16">Open Roles</h2></ScrollReveal>
           <div className="space-y-4">
-            {jobs.map((job, i) => (
-              <ScrollReveal key={job.title} delay={i * 50}>
-                <div className="bg-background rounded-2xl border border-border overflow-hidden">
-                  <button onClick={() => setOpenJob(openJob === i ? null : i)} className="w-full p-6 flex items-start gap-4 text-left">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-foreground mb-2">{job.title}</h3>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/8 text-primary">{job.dept}</span>
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">{job.location}</span>
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">{job.type}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{job.desc}</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-primary text-sm font-medium flex-shrink-0 mt-1">
-                      {openJob === i ? <>Close <ChevronUp className="w-4 h-4" /></> : <>View & Apply <ChevronDown className="w-4 h-4" /></>}
-                    </div>
-                  </button>
-
-                  {openJob === i && (
-                    <div className="border-t border-border p-6">
-                      <div className="grid md:grid-cols-2 gap-10">
-                        <div>
-                          <h4 className="text-base font-bold text-foreground mb-3">About the role</h4>
-                          <p className="text-sm text-muted-foreground leading-relaxed mb-5">{job.jd.about}</p>
-                          <h4 className="text-base font-bold text-foreground mb-3">What you'll do</h4>
-                          <ul className="space-y-2 mb-5">
-                            {job.jd.tasks.map((t) => <li key={t} className="text-sm text-muted-foreground flex gap-2"><span className="text-primary">•</span>{t}</li>)}
-                          </ul>
-                          <h4 className="text-base font-bold text-foreground mb-3">What we're looking for</h4>
-                          <ul className="space-y-2 mb-5">
-                            {job.jd.requirements.map((r) => <li key={r} className="text-sm text-muted-foreground flex gap-2"><span className="text-primary">•</span>{r}</li>)}
-                          </ul>
-                          <h4 className="text-base font-bold text-foreground mb-3">Compensation</h4>
-                          <p className="text-sm text-muted-foreground">{job.jd.comp}</p>
+            {jobsLoading ? (
+              <p className="text-center text-muted-foreground py-8">Loading jobs...</p>
+            ) : jobs.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No open positions at the moment. Check back later.</p>
+            ) : (
+              jobs.map((job, i) => (
+                <ScrollReveal key={job._id} delay={i * 50}>
+                  <div className="bg-background rounded-2xl border border-border overflow-hidden">
+                    <button type="button" onClick={() => setOpenJob(openJob === job._id ? null : job._id)} className="w-full p-6 flex items-start gap-4 text-left">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-foreground mb-2">{job.title}</h3>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {job.location ? (
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">{job.location}</span>
+                          ) : null}
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-primary text-sm font-medium flex-shrink-0 mt-1">
+                        {openJob === job._id ? <>Close <ChevronUp className="w-4 h-4" /></> : <>View & Apply <ChevronDown className="w-4 h-4" /></>}
+                      </div>
+                    </button>
 
-                        <div className="bg-muted/30 rounded-2xl p-6">
-                          <h4 className="text-base font-bold text-foreground mb-5">Apply for this role</h4>
-                          <form onSubmit={(e) => handleApply(e, job.title)} className="space-y-3">
-                            <div className="grid grid-cols-2 gap-3">
-                              <input placeholder="First Name *" required value={applyForm.firstName} onChange={(e) => setApplyForm({ ...applyForm, firstName: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                              <input placeholder="Last Name *" required value={applyForm.lastName} onChange={(e) => setApplyForm({ ...applyForm, lastName: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                            </div>
-                            <input placeholder="Email *" type="email" required value={applyForm.email} onChange={(e) => setApplyForm({ ...applyForm, email: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                            <input placeholder="Phone *" required value={applyForm.phone} onChange={(e) => setApplyForm({ ...applyForm, phone: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                            <input value={job.title} readOnly className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-sm text-muted-foreground cursor-not-allowed" />
-                            <div className="grid grid-cols-2 gap-3">
-                              <input placeholder="Current Company" value={applyForm.company} onChange={(e) => setApplyForm({ ...applyForm, company: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                              <select value={applyForm.notice} onChange={(e) => setApplyForm({ ...applyForm, notice: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                                <option value="">Notice Period</option>
-                                <option>Immediate</option><option>15 days</option><option>30 days</option><option>60 days</option><option>90 days</option>
+                    {openJob === job._id && (
+                      <div className="border-t border-border p-6">
+                        <div className="grid md:grid-cols-2 gap-10">
+                          <div>
+                            <h4 className="text-base font-bold text-foreground mb-3">About the role</h4>
+                            <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{job.description || ""}</div>
+                          </div>
+
+                          <div className="bg-muted/30 rounded-2xl p-6">
+                            <h4 className="text-base font-bold text-foreground mb-5">Apply for this role</h4>
+                            <form onSubmit={(e) => handleApply(e, job._id)} className="space-y-3">
+                              <div className="grid grid-cols-2 gap-3">
+                                <input placeholder="First Name *" required value={applyForm.firstName} onChange={(e) => setApplyForm({ ...applyForm, firstName: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                                <input placeholder="Last Name *" required value={applyForm.lastName} onChange={(e) => setApplyForm({ ...applyForm, lastName: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                              </div>
+                              <input placeholder="Email *" type="email" required value={applyForm.email} onChange={(e) => setApplyForm({ ...applyForm, email: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                              <input placeholder="Phone *" required value={applyForm.phone} onChange={(e) => setApplyForm({ ...applyForm, phone: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                              <input value={job.title} readOnly className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-sm text-muted-foreground cursor-not-allowed" />
+                              <div className="grid grid-cols-2 gap-3">
+                                <input placeholder="Current Company" value={applyForm.company} onChange={(e) => setApplyForm({ ...applyForm, company: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                                <select value={applyForm.notice} onChange={(e) => setApplyForm({ ...applyForm, notice: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                                  <option value="">Notice Period</option>
+                                  <option>Immediate</option><option>15 days</option><option>30 days</option><option>60 days</option><option>90 days</option>
+                                </select>
+                              </div>
+                              <select required value={applyForm.experience} onChange={(e) => setApplyForm({ ...applyForm, experience: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="">Total Experience *</option>
+                                <option>Fresher / Intern</option><option>1–3 years</option><option>3–5 years</option><option>5–8 years</option><option>8–12 years</option><option>12+ years</option>
                               </select>
-                            </div>
-                            <select required value={applyForm.experience} onChange={(e) => setApplyForm({ ...applyForm, experience: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                              <option value="">Total Experience *</option>
-                              <option>Fresher / Intern</option><option>1–3 years</option><option>3–5 years</option><option>5–8 years</option><option>8–12 years</option><option>12+ years</option>
-                            </select>
-                            <input placeholder="LinkedIn Profile URL *" required value={applyForm.linkedin} onChange={(e) => setApplyForm({ ...applyForm, linkedin: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                            <input placeholder="Portfolio / GitHub URL (optional)" value={applyForm.portfolio} onChange={(e) => setApplyForm({ ...applyForm, portfolio: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                            <textarea placeholder="Why TalentSpotify? (optional)" rows={3} value={applyForm.why} onChange={(e) => setApplyForm({ ...applyForm, why: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
-                            <div className="border-2 border-dashed border-border rounded-lg p-5 text-center cursor-pointer hover:border-primary transition-colors">
-                              <Upload className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                              <p className="text-xs text-muted-foreground">Drop your resume here (PDF/DOCX, 5MB max)</p>
-                            </div>
-                            <button type="submit" className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all">
-                              Submit Application →
-                            </button>
-                            <p className="text-xs text-muted-foreground text-center">We review every application within 5 business days.</p>
-                          </form>
+                              <input placeholder="LinkedIn Profile URL *" required value={applyForm.linkedin} onChange={(e) => setApplyForm({ ...applyForm, linkedin: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                              <input placeholder="Portfolio / GitHub URL (optional)" value={applyForm.portfolio} onChange={(e) => setApplyForm({ ...applyForm, portfolio: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                              <textarea placeholder="Why TalentSpotify? (optional)" rows={3} value={applyForm.why} onChange={(e) => setApplyForm({ ...applyForm, why: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
+                              <div className="border-2 border-dashed border-border rounded-lg p-5 text-center cursor-pointer hover:border-primary transition-colors">
+                                <Upload className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                                <p className="text-xs text-muted-foreground">Drop your resume here (PDF/DOCX, 5MB max)</p>
+                              </div>
+                              <button type="submit" disabled={submitting} className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all disabled:opacity-60">
+                                {submitting ? "Submitting..." : "Submit Application →"}
+                              </button>
+                              <p className="text-xs text-muted-foreground text-center">We review every application within 5 business days.</p>
+                            </form>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </ScrollReveal>
-            ))}
+                    )}
+                  </div>
+                </ScrollReveal>
+              ))
+            )}
           </div>
         </div>
       </section>

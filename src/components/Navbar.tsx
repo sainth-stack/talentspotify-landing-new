@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { loginPage } from "@/const";
 
 const productLinks = [
   { label: "TalentSpotify Core", desc: "HR Operations", href: "/#product-core" },
@@ -133,12 +134,14 @@ const Navbar = () => {
         </div>
 
         <div className="hidden lg:flex items-center gap-3">
-          <Link
-            to="/#book-demo"
+          <a
+            href={loginPage}
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-4 py-2 text-[13px] font-medium text-foreground/70 hover:text-foreground transition-colors"
           >
             Login
-          </Link>
+          </a>
           <Link
             to="/#book-demo"
             className="px-5 py-2.5 text-[13px] font-bold text-primary-foreground bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-md hover:shadow-lg"
@@ -196,6 +199,14 @@ const Navbar = () => {
               </div>
             ))}
             <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-border">
+              <a
+                href={loginPage}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-3 text-sm font-medium text-foreground/70 hover:text-foreground text-center rounded-lg border border-border"
+              >
+                Login
+              </a>
               <Link
                 to="/#book-demo"
                 className="px-4 py-3 text-sm font-bold text-primary-foreground bg-primary rounded-lg text-center"
