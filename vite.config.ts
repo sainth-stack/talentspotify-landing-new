@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 5001,
+    allowedHosts: ["www.talentspotify.com", "talentspotify.com"],
     hmr: {
       overlay: false,
     },
@@ -18,5 +19,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
+  },
+  preview: {
+    allowedHosts: ["www.talentspotify.com", "talentspotify.com"],
   },
 }));
