@@ -15,9 +15,23 @@
     <meta name="twitter:title" content="TalentSpotify — AI-Powered Performance Reviews &amp; OKR Management">
     <meta property="og:description" content="TalentSpotify detects bias in performance reviews before they become decisions. AI-powered OKRs, TARA voice agent, and gamified recognition.">
     <meta name="twitter:description" content="TalentSpotify detects bias in performance reviews before they become decisions. AI-powered OKRs, TARA voice agent, and gamified recognition.">
-    <script src='/clarity.js' async></script>
-    <script src='/faittracker.js' async></script>
-    <script async src="https://tag.clearbitscripts.com/v1/pk_dc97a33b14aa2e9ebc805625c1f38492/tags.js" referrerPolicy='strict-origin-when-cross-origin'></script>
+    <script src="/clarity.js" async></script>
+    <!-- FAI tracker + Clearbit call third-party APIs that block localhost (CORS). Skip on local dev. -->
+    <script>
+      (function () {
+        var h = location.hostname;
+        if (h === "localhost" || h === "127.0.0.1") return;
+        var s = document.createElement("script");
+        s.src = "/faittracker.js";
+        s.async = true;
+        document.head.appendChild(s);
+        var c = document.createElement("script");
+        c.async = true;
+        c.src = "https://tag.clearbitscripts.com/v1/pk_dc97a33b14aa2e9ebc805625c1f38492/tags.js";
+        c.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        document.head.appendChild(c);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
