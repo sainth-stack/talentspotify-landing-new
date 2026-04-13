@@ -20,3 +20,10 @@ export const companyIdForLanding =
 /** App login URL — same as old `utilities/cons.js` `loginPage` */
 export const loginPage =
   import.meta.env.VITE_LOGIN_PAGE || "https://ai.talentspotifyapp.com";
+
+/** Cloudinary unsigned upload (same as legacy `BrowseFilesNormal`) — resume → `cvURL` */
+export const cloudinaryUploadUrl =
+  import.meta.env.VITE_CLOUDINARY_UPLOAD_URL ||
+  "https://api.cloudinary.com/v1_1/dbqm9svvp/raw/upload";
+export const cloudinaryUploadPreset =
+  import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "ma7nge92";

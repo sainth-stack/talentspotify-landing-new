@@ -1,7 +1,12 @@
 import ScrollReveal from "@/components/ScrollReveal";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronDown, ChevronUp, Upload } from "lucide-react";
-import { landingApiBase, companyIdForLanding } from "@/const";
+import {
+  landingApiBase,
+  companyIdForLanding,
+  cloudinaryUploadUrl,
+  cloudinaryUploadPreset,
+} from "@/const";
 
 type ApiJob = {
   _id: string;
@@ -10,25 +15,29 @@ type ApiJob = {
   description?: string;
 };
 
-const emptyForm = {
-  firstName: "",
-  lastName: "",
+/** Matches landing `POST .../jobs/:id/apply` body (see legacy Careers.js + API) */
+const emptyApplyForm = {
+  name: "",
   email: "",
   phone: "",
   company: "",
-  notice: "",
-  experience: "",
-  linkedin: "",
-  portfolio: "",
-  why: "",
+  linkedinURL: "",
+  cvURL: "",
 };
+
+const MAX_CV_BYTES = 5 * 1024 * 1024;
 
 const Careers = () => {
   const [jobs, setJobs] = useState<ApiJob[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [openJob, setOpenJob] = useState<string | null>(null);
-  const [applyForm, setApplyForm] = useState(emptyForm);
+  const [applyForm, setApplyForm] = useState(emptyApplyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingCv, setUploadingCv] = useState(false);
+  const [cvUploadError, setCvUploadError] = useState("");
+  const [applyError, setApplyError] = useState("");
+  const [dragCv, setDragCv] = useState(false);
+  const cvFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,17 +62,65 @@ const Careers = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (openJob) {
+      setApplyForm(emptyApplyForm);
+      setApplyError("");
+      setCvUploadError("");
+    }
+  }, [openJob]);
+
+  const uploadCvToCloudinary = useCallback(async (file: File) => {
+    if (file.size > MAX_CV_BYTES) {
+      setCvUploadError("File must be 5MB or smaller.");
+      return;
+    }
+    setUploadingCv(true);
+    setCvUploadError("");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", cloudinaryUploadPreset);
+    try {
+      const res = await fetch(cloudinaryUploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json().catch(() => null);
+      if (data?.secure_url) {
+        setApplyForm((f) => ({ ...f, cvURL: data.secure_url }));
+      } else {
+        setCvUploadError(
+          typeof data?.error?.message === "string" ? data.error.message : "Upload failed."
+        );
+      }
+    } catch {
+      setCvUploadError("Upload failed. Please try again.");
+    } finally {
+      setUploadingCv(false);
+    }
+  }, []);
+
+  const onCvFile = (file: File | undefined) => {
+    if (!file) return;
+    uploadCvToCloudinary(file);
+  };
+
   const handleApply = async (e: React.FormEvent, jobId: string) => {
     e.preventDefault();
+    setApplyError("");
+    if (!applyForm.cvURL?.trim()) {
+      setApplyError("Please upload your CV (resume).");
+      return;
+    }
     setSubmitting(true);
     const url = `${landingApiBase}/jobs/${jobId}/apply`;
     const payload = {
-      name: `${applyForm.firstName} ${applyForm.lastName}`.trim(),
-      email: applyForm.email,
-      phone: applyForm.phone,
-      company: applyForm.company,
-      linkedinURL: applyForm.linkedin,
-      cvURL: "",
+      name: applyForm.name.trim(),
+      email: applyForm.email.trim(),
+      phone: applyForm.phone.trim(),
+      company: applyForm.company.trim(),
+      linkedinURL: applyForm.linkedinURL.trim(),
+      cvURL: applyForm.cvURL.trim(),
       ...(companyIdForLanding ? { companyId: companyIdForLanding } : {}),
     };
 
@@ -76,7 +133,7 @@ const Careers = () => {
       const data = await response.json().catch(() => null);
       if (response.ok && data?.success) {
         alert("Application submitted successfully!");
-        setApplyForm(emptyForm);
+        setApplyForm(emptyApplyForm);
         setOpenJob(null);
       } else {
         alert(typeof data?.message === "string" ? data.message : "Something went wrong.");
@@ -90,7 +147,6 @@ const Careers = () => {
 
   return (
     <>
-      {/* Hero */}
       <section className="py-24 md:py-32 bg-background">
         <div className="container text-center">
           <ScrollReveal>
@@ -103,7 +159,6 @@ const Careers = () => {
         </div>
       </section>
 
-      {/* Mission Quote */}
       <section className="py-16 bg-muted/30 border-y border-border">
         <div className="container max-w-3xl">
           <ScrollReveal>
@@ -116,7 +171,6 @@ const Careers = () => {
         </div>
       </section>
 
-      {/* Perks */}
       <section className="py-24 bg-background">
         <div className="container">
           <ScrollReveal><h2 className="text-3xl font-extrabold text-foreground tracking-tight text-center mb-16">Why join us</h2></ScrollReveal>
@@ -141,7 +195,6 @@ const Careers = () => {
         </div>
       </section>
 
-      {/* Open Roles — same API as legacy talent-spotify-landing (GET /jobs, POST /jobs/:id/apply) */}
       <section className="py-24 bg-muted/30 border-t border-border">
         <div className="container max-w-4xl">
           <ScrollReveal><h2 className="text-3xl font-extrabold text-foreground tracking-tight text-center mb-16">Open Roles</h2></ScrollReveal>
@@ -177,34 +230,116 @@ const Careers = () => {
                           </div>
 
                           <div className="bg-muted/30 rounded-2xl p-6">
-                            <h4 className="text-base font-bold text-foreground mb-5">Apply for this role</h4>
+                            <h4 className="text-base font-bold text-foreground mb-2">Apply for this role</h4>
+                            <p className="text-xs text-muted-foreground mb-5">{job.title}</p>
                             <form onSubmit={(e) => handleApply(e, job._id)} className="space-y-3">
-                              <div className="grid grid-cols-2 gap-3">
-                                <input placeholder="First Name *" required value={applyForm.firstName} onChange={(e) => setApplyForm({ ...applyForm, firstName: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                                <input placeholder="Last Name *" required value={applyForm.lastName} onChange={(e) => setApplyForm({ ...applyForm, lastName: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                              <input
+                                placeholder="Full name *"
+                                required
+                                name="name"
+                                autoComplete="name"
+                                value={applyForm.name}
+                                onChange={(e) => setApplyForm({ ...applyForm, name: e.target.value })}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                              />
+                              <input
+                                placeholder="Email *"
+                                type="email"
+                                required
+                                name="email"
+                                autoComplete="email"
+                                value={applyForm.email}
+                                onChange={(e) => setApplyForm({ ...applyForm, email: e.target.value })}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                              />
+                              <input
+                                placeholder="Phone number *"
+                                required
+                                name="phone"
+                                autoComplete="tel"
+                                value={applyForm.phone}
+                                onChange={(e) => setApplyForm({ ...applyForm, phone: e.target.value })}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                              />
+                              <input
+                                placeholder="Role *"
+                                required
+                                name="company"
+                                value={applyForm.company}
+                                onChange={(e) => setApplyForm({ ...applyForm, company: e.target.value })}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                              />
+                              <input
+                                placeholder="LinkedIn URL *"
+                                required
+                                name="linkedinURL"
+                                value={applyForm.linkedinURL}
+                                onChange={(e) => setApplyForm({ ...applyForm, linkedinURL: e.target.value })}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                              />
+
+                              <input
+                                ref={cvFileInputRef}
+                                type="file"
+                                className="sr-only"
+                                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                disabled={uploadingCv || submitting}
+                                onChange={(e) => {
+                                  onCvFile(e.target.files?.[0]);
+                                  e.target.value = "";
+                                }}
+                              />
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    if (!uploadingCv && !submitting) cvFileInputRef.current?.click();
+                                  }
+                                }}
+                                onClick={() => !uploadingCv && !submitting && cvFileInputRef.current?.click()}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setDragCv(true);
+                                }}
+                                onDragLeave={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setDragCv(false);
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setDragCv(false);
+                                  if (uploadingCv || submitting) return;
+                                  const file = e.dataTransfer.files?.[0];
+                                  if (file) onCvFile(file);
+                                }}
+                                className={`border-2 border-dashed rounded-lg p-5 text-center transition-colors ${
+                                  dragCv ? "border-primary bg-primary/5" : "border-border hover:border-primary cursor-pointer"
+                                } ${uploadingCv || submitting ? "opacity-60 pointer-events-none" : ""}`}
+                              >
+                                <Upload className="w-5 h-5 text-muted-foreground mx-auto mb-2" />
+                                <p className="text-sm font-medium text-foreground">
+                                  {uploadingCv ? "Uploading…" : "Drag your resume here or click to upload"}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">PDF, DOCX — 5MB max (required)</p>
+                                {applyForm.cvURL ? (
+                                  <p className="text-xs text-primary font-medium mt-2 truncate" title={applyForm.cvURL}>
+                                    Resume attached ✓
+                                  </p>
+                                ) : null}
                               </div>
-                              <input placeholder="Email *" type="email" required value={applyForm.email} onChange={(e) => setApplyForm({ ...applyForm, email: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                              <input placeholder="Phone *" required value={applyForm.phone} onChange={(e) => setApplyForm({ ...applyForm, phone: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                              <input value={job.title} readOnly className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-sm text-muted-foreground cursor-not-allowed" />
-                              <div className="grid grid-cols-2 gap-3">
-                                <input placeholder="Current Company" value={applyForm.company} onChange={(e) => setApplyForm({ ...applyForm, company: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                                <select value={applyForm.notice} onChange={(e) => setApplyForm({ ...applyForm, notice: e.target.value })} className="px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                                  <option value="">Notice Period</option>
-                                  <option>Immediate</option><option>15 days</option><option>30 days</option><option>60 days</option><option>90 days</option>
-                                </select>
-                              </div>
-                              <select required value={applyForm.experience} onChange={(e) => setApplyForm({ ...applyForm, experience: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                                <option value="">Total Experience *</option>
-                                <option>Fresher / Intern</option><option>1–3 years</option><option>3–5 years</option><option>5–8 years</option><option>8–12 years</option><option>12+ years</option>
-                              </select>
-                              <input placeholder="LinkedIn Profile URL *" required value={applyForm.linkedin} onChange={(e) => setApplyForm({ ...applyForm, linkedin: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                              <input placeholder="Portfolio / GitHub URL (optional)" value={applyForm.portfolio} onChange={(e) => setApplyForm({ ...applyForm, portfolio: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                              <textarea placeholder="Why TalentSpotify? (optional)" rows={3} value={applyForm.why} onChange={(e) => setApplyForm({ ...applyForm, why: e.target.value })} className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
-                              <div className="border-2 border-dashed border-border rounded-lg p-5 text-center cursor-pointer hover:border-primary transition-colors">
-                                <Upload className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-                                <p className="text-xs text-muted-foreground">Drop your resume here (PDF/DOCX, 5MB max)</p>
-                              </div>
-                              <button type="submit" disabled={submitting} className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all disabled:opacity-60">
+                              {cvUploadError ? <p className="text-xs text-destructive">{cvUploadError}</p> : null}
+                              {applyError ? <p className="text-xs text-destructive">{applyError}</p> : null}
+
+                              <button
+                                type="submit"
+                                disabled={submitting || uploadingCv}
+                                className="w-full py-3.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all disabled:opacity-60"
+                              >
                                 {submitting ? "Submitting..." : "Submit Application →"}
                               </button>
                               <p className="text-xs text-muted-foreground text-center">We review every application within 5 business days.</p>
