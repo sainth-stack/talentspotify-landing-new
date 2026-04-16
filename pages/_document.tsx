@@ -29,30 +29,21 @@ export default function Document() {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         
         <script src='/clarity.js' async></script>
+        <script src='/faittracker.js' async></script>
+        <script async src="https://tag.clearbitscripts.com/v1/pk_dc97a33b14aa2e9ebc805625c1f38492/tags.js" referrerPolicy='strict-origin-when-cross-origin'></script>
         <script 
           dangerouslySetInnerHTML={{
             __html: `
-              (function () {
-                var h = location.hostname;
-                if (h === "localhost" || h === "127.0.0.1") return;
-                var s = document.createElement("script");
-                s.src = "/faittracker.js";
-                s.async = true;
-                document.head.appendChild(s);
-                var c = document.createElement("script");
-                c.async = true;
-                c.src = "https://tag.clearbitscripts.com/v1/pk_dc97a33b14aa2e9ebc805625c1f38492/tags.js";
-                c.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
-                document.head.appendChild(c);
+              (function() {
+                var script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = 'https://d3mkw6s8thqya7.cloudfront.net/integration-plugin.js';
+                script.id = 'aisensy-wa-widget';
+                script.setAttribute('widget-id', '1ty3rt');
+                document.head.appendChild(script);
               })();
             `
           }}
-        />
-        <script 
-          type="text/javascript"
-          src="https://d3mkw6s8thqya7.cloudfront.net/integration-plugin.js"
-          id="aisensy-wa-widget"
-          data-widget-id="1ty3rt"
         />
       </Head>
       <body>
