@@ -19,7 +19,7 @@ const CustomerLogosStrip = ({ className = "" }: { className?: string }) => (
     <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium text-center mb-6">Trusted by HR leaders across industries</p>
     <div className="flex flex-wrap justify-center gap-10 items-center">
       {logos.map(l => (
-        <img key={l.alt} src={l.src} alt={l.alt} className="h-8 w-auto object-contain grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all" loading="lazy" />
+        <img key={l.alt} src={l.src.src} alt={l.alt} className="h-8 w-auto object-contain grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all" loading="lazy" />
       ))}
     </div>
   </div>

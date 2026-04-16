@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { Menu, X, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { loginPage } from "@/const";
@@ -42,8 +43,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleHashLink = useCallback((href: string) => {
@@ -51,16 +51,16 @@ const Navbar = () => {
     setMobileOpen(false);
     if (href.startsWith("/#")) {
       const hash = href.substring(1);
-      if (location.pathname === "/") {
+      if (router.pathname === "/") {
         const el = document.querySelector(hash);
         if (el) el.scrollIntoView({ behavior: "smooth" });
       } else {
-        navigate("/" + hash);
+        router.push("/" + hash);
       }
     } else {
-      navigate(href);
+      router.push(href);
     }
-  }, [location.pathname, navigate]);
+  }, [router]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -71,7 +71,7 @@ const Navbar = () => {
   useEffect(() => {
     setMobileOpen(false);
     setOpenDropdown(null);
-  }, [location]);
+  }, [router.pathname]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -90,8 +90,8 @@ const Navbar = () => {
       }`}
     >
       <div className="container flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="TalentSpotify" className="h-14 w-auto" />
+        <Link href="/" className="flex items-center gap-2">
+          <img src={logo.src} alt="TalentSpotify" className="h-14 w-auto" />
         </Link>
 
         {/* Desktop Nav */}
@@ -108,7 +108,7 @@ const Navbar = () => {
                 </button>
               ) : (
                 <Link
-                  to={link.href}
+                  href={link.href}
                   className="px-3 py-2 text-[13px] font-medium text-foreground/70 hover:text-foreground rounded-lg transition-colors"
                 >
                   {link.label}
@@ -143,7 +143,7 @@ const Navbar = () => {
             Login
           </a>
           <Link
-            to="/#book-demo"
+            href="/#book-demo"
             className="px-5 py-2.5 text-[13px] font-bold text-primary-foreground bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-md hover:shadow-lg"
           >
             Request Demo
@@ -190,7 +190,7 @@ const Navbar = () => {
                   </>
                 ) : (
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="block px-4 py-3 text-sm font-medium text-foreground/70 hover:text-foreground rounded-lg transition-colors"
                   >
                     {link.label}
@@ -208,7 +208,7 @@ const Navbar = () => {
                 Login
               </a>
               <Link
-                to="/#book-demo"
+                href="/#book-demo"
                 className="px-4 py-3 text-sm font-bold text-primary-foreground bg-primary rounded-lg text-center"
               >
                 Request Demo

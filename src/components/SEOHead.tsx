@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import Head from "next/head";
 
 interface SEOHeadProps {
   title: string;
@@ -31,7 +31,7 @@ const SEOHead = ({
     : [];
 
   return (
-    <Helmet>
+    <Head>
       <title>{title}</title>
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}
@@ -53,11 +53,9 @@ const SEOHead = ({
 
       {/* JSON-LD */}
       {schemas.map((schema, i) => (
-        <script key={i} type="application/ld+json">
-          {JSON.stringify(schema)}
-        </script>
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       ))}
-    </Helmet>
+    </Head>
   );
 };
 

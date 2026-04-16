@@ -1,3 +1,5 @@
+import Head from "next/head";
+import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 import sunonixLogo from "@/assets/clients/sunonix.png";
 import oromoLogo from "@/assets/clients/oromo.png";
@@ -10,7 +12,6 @@ import okrDashboardImg from "@/assets/screenshots/okr-dashboard.jpg";
 import rewardsEngineImg from "@/assets/screenshots/rewards-engine.jpg";
 import taraHeroImg from "@/assets/screenshots/tara-voice-agent.jpg";
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { baseURL } from "@/const";
 import {
   Target, Shield, Trophy, Zap, Users, BarChart3, ChevronDown, ChevronRight,
@@ -59,7 +60,7 @@ const Hero = () => (
               <a href="#book-demo" className="px-8 py-4 bg-accent text-accent-foreground text-base font-bold rounded-lg hover:bg-accent/90 transition-all duration-200 shadow-md hover:shadow-lg text-center">
                 Start Free Trial
               </a>
-              <Link to="/roi-calculator" className="px-8 py-4 text-foreground font-semibold rounded-lg border-2 border-primary/30 hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center">
+              <Link href="/roi-calculator" className="px-8 py-4 text-foreground font-semibold rounded-lg border-2 border-primary/30 hover:border-primary hover:bg-primary/5 transition-all duration-200 text-center">
                 Calculate Your ROI
               </Link>
             </div>
@@ -504,7 +505,7 @@ const SuccessStories = () => (
               </div>
               <p className="text-sm text-foreground/70 leading-relaxed italic mb-6 flex-1">"{story.quote}"</p>
               <p className="text-xs font-semibold text-muted-foreground mb-4">— {story.role}</p>
-              <Link to="/case-study" className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
+              <Link href="/case-study" className="inline-flex items-center text-sm font-semibold text-primary hover:underline">
                 {story.cta}
               </Link>
             </div>
@@ -1065,7 +1066,7 @@ const BookDemo = () => {
                 <p className="text-xs text-red-500 text-center mt-3">{error}</p>
               )}
               <p className="text-xs text-muted-foreground text-center mt-3">
-                By submitting, you agree to our <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>. No spam, ever.
+                By submitting, you agree to our <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>. No spam, ever.
               </p>
             </form>
           </ScrollReveal>
@@ -1087,6 +1088,16 @@ const StickyMobileCTA = () => (
 /* ─── Home Page ─── */
 const Index = () => (
   <>
+    <Head>
+      <title>TalentSpotify — AI-Powered Performance Reviews & OKR Management</title>
+      <meta name="description" content="Eliminate bias. Empower performance. AI-powered reviews, OKRs, and recognition built for fairness. Trusted by 50+ leading companies." />
+      <meta property="og:title" content="TalentSpotify — AI-Powered Performance Reviews & OKR Management" />
+      <meta name="twitter:title" content="TalentSpotify — AI-Powered Performance Reviews & OKR Management" />
+      <meta property="og:description" content="TalentSpotify detects bias in performance reviews before they become decisions. AI-powered OKRs, TARA voice agent, and gamified recognition." />
+      <meta name="twitter:description" content="TalentSpotify detects bias in performance reviews before they become decisions. AI-powered OKRs, TARA voice agent, and gamified recognition." />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary_large_image" />
+    </Head>
     <Hero />
     <CredentialBadges />
     <TrustLogoBar />

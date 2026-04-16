@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import logo from "@/assets/logo.png";
 import { Award } from "lucide-react";
 
@@ -44,7 +44,7 @@ const Footer = () => (
         {/* Brand */}
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-2 mb-5">
-            <img src={logo} alt="TalentSpotify" className="h-20 w-auto brightness-0 invert" />
+            <img src={logo.src} alt="TalentSpotify" className="h-20 w-auto brightness-0 invert" />
           </div>
           <p className="text-sm leading-relaxed mb-5 text-primary-foreground/60">
             AI-powered performance management built for fairness. Reviews, OKRs, and recognition in one platform.
@@ -68,7 +68,7 @@ const Footer = () => (
               {links.map((link) => (
                 <li key={link.label}>
                   <Link
-                    to={link.href}
+                    href={link.href}
                     className="text-sm text-primary-foreground/60 transition-colors hover:text-primary-foreground"
                   >
                     {link.label}
@@ -100,7 +100,7 @@ const Footer = () => (
           {["Privacy", "Terms", "GDPR"].map((l) => (
             <Link
               key={l}
-              to={`/${l.toLowerCase()}`}
+              href={`/${l.toLowerCase()}`}
               className="text-xs text-primary-foreground/40 transition-colors hover:text-primary-foreground/70"
             >
               {l}
