@@ -94,7 +94,7 @@ const Footer = () => (
           <p className="text-xs text-primary-foreground/40">
             © 2026 TalentSpotify Private Limited. All rights reserved.
           </p>
-          <p className="text-[10px] text-primary-foreground/30 mt-0.5">CIN: U72200KA2024PTC123456</p>
+          <p className="text-[10px] text-primary-foreground/30 mt-0.5">CIN: U72900KA2022PTC157845</p>
         </div>
         <div className="flex gap-6">
           {["Privacy", "Terms", "GDPR"].map((l) => (
