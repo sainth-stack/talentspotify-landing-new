@@ -4,8 +4,9 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <link rel="icon" type="image/png" href="/favicon.png" />
-        <link rel="apple-touch-icon" href="/favicon.png" />
+        <link rel="icon" type="image/png" href="/favicon.png?v=2" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+        <link rel="apple-touch-icon" href="/favicon.png?v=2" />
         <link rel="apple-touch-icon" sizes="57x57" href="/images/apple-icon-57x57.png" />
         <link rel="apple-touch-icon" sizes="60x60" href="/images/apple-icon-60x60.png" />
         <link rel="apple-touch-icon" sizes="72x72" href="/images/apple-icon-72x72.png" />
