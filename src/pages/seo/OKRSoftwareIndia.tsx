@@ -21,7 +21,7 @@ const OKRSoftwareIndia = () => (
     <SEOHead
       title="Best OKR Software in India | AI-Powered Goal Tracking | TalentSpotify"
       description="India's leading OKR software with AI goal writing, real-time dashboards, and performance review integration. Trusted by 50+ companies."
-      canonical="/okr-software-india"
+      canonical="/okrsoftware-india"
       keywords="OKR software India, objectives key results tool, goal tracking software, OKR management platform"
       jsonLd={[
         softwareApplicationSchema,

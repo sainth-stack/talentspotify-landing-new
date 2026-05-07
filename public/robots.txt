@@ -1,3 +1,16 @@
 User-agent: *
 Allow: /
+
+# Disallow admin and private areas
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /*.json$
+
+# Allow important resources
+Allow: /favicon.ico
+Allow: /logo.png
+Allow: /sitemap.xml
+
+# Sitemap location
 Sitemap: https://talentspotify.com/sitemap.xml

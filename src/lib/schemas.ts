@@ -6,7 +6,12 @@ export const organizationSchema = {
   "@type": "Organization",
   name: "TalentSpotify",
   url: SITE_URL,
-  logo: LOGO_URL,
+  logo: {
+    "@type": "ImageObject",
+    url: LOGO_URL,
+    width: "512",
+    height: "512"
+  },
   description: "AI-powered performance management platform for fair reviews, OKRs, and employee recognition.",
   address: {
     "@type": "PostalAddress",
@@ -14,7 +19,7 @@ export const organizationSchema = {
     addressRegion: "Karnataka",
     addressCountry: "IN",
   },
-  sameAs: [],
+  sameAs: ["https://www.linkedin.com/company/talentspotify", "https://twitter.com/talentspotify"],
 };
 
 export const softwareApplicationSchema = {

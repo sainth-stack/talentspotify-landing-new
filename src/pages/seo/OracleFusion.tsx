@@ -21,7 +21,7 @@ const OracleFusion = () => (
     <SEOHead
       title="Oracle Fusion Performance Management Integration | TalentSpotify"
       description="Enhance Oracle Fusion HCM with AI-powered performance reviews, OKRs, and fairness scoring. Native integration, no manual data imports."
-      canonical="/oracle-fusion-performance-management"
+      canonical="/oracle-fusion"
       keywords="Oracle Fusion performance management, Oracle HCM integration, Oracle Fusion alternative, Oracle performance review tool"
       jsonLd={[
         softwareApplicationSchema,

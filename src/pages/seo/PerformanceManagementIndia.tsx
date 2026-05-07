@@ -21,7 +21,7 @@ const PerformanceManagementIndia = () => (
     <SEOHead
       title="Best Performance Management Software in India | TalentSpotify"
       description="TalentSpotify is India's #1 AI-powered performance management software. Eliminate bias, automate reviews, and align OKRs — trusted by 50+ companies."
-      canonical="/performance-management-software-india"
+      canonical="/performance-management-india"
       keywords="performance management software India, employee performance review tool, AI performance management, HR software India"
       jsonLd={[
         softwareApplicationSchema,

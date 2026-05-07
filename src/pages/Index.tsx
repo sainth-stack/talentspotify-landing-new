@@ -13,6 +13,7 @@ import rewardsEngineImg from "@/assets/screenshots/rewards-engine.jpg";
 import taraHeroImg from "@/assets/screenshots/tara-voice-agent.jpg";
 import { useState, useEffect, useCallback } from "react";
 import { baseURL } from "@/const";
+import { organizationSchema } from "@/lib/schemas";
 import {
   Target, Shield, Trophy, Zap, Users, BarChart3, ChevronDown, ChevronRight,
   Star, Award, CheckCircle2, ArrowRight, Clock, Eye, TrendingUp, Lock,
@@ -1097,6 +1098,7 @@ const Index = () => (
       <meta name="twitter:description" content="TalentSpotify detects bias in performance reviews before they become decisions. AI-powered OKRs, TARA voice agent, and gamified recognition." />
       <meta property="og:type" content="website" />
       <meta name="twitter:card" content="summary_large_image" />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
     </Head>
     <Hero />
     <CredentialBadges />

@@ -21,7 +21,7 @@ const UAEPerformanceManagement = () => (
     <SEOHead
       title="Performance Management Software UAE & GCC | TalentSpotify"
       description="AI-powered performance management for UAE & GCC enterprises. Fair reviews, OKRs, and employee recognition — compliant with local regulations."
-      canonical="/gcc/uae-performance-management"
+      canonical="/uaeperformance-management"
       keywords="performance management software UAE, HRTech GCC, UAE HR software, performance review UAE, OKR software GCC"
       jsonLd={[
         softwareApplicationSchema,

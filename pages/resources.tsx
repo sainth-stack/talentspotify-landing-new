@@ -6,7 +6,7 @@ const categories = ["All", "Guides", "Templates", "Case Studies", "Webinars"];
 
 const resources = [
   { cat: "Guides", title: "OKR Readiness Check", desc: "Assess if your org is ready for OKR adoption with this comprehensive guide.", icon: <BookOpen className="w-5 h-5 text-primary" />, link: "https://okrreadynesscheck.talentspotify.com/" },
-  { cat: "Guides", title: "Gamified OKR Learning", desc: "Master OKRs through interactive, gamified learning modules designed for teams.", icon: <BookOpen className="w-5 h-5 text-violet" />, link: "https://talentspotifyokr.lovable.app/" },
+  { cat: "Guides", title: "Gamified OKR Learning", desc: "Master OKRs through interactive, gamified learning modules designed for teams.", icon: <BookOpen className="w-5 h-5 text-violet" />, link: "https://okr.talentspotify.com/" },
   { cat: "Guides", title: "Review Bias Detector", desc: "A framework to identify and address common biases in performance reviews.", icon: <FileText className="w-5 h-5 text-teal" /> },
   { cat: "Templates", title: "Employee Cost Calculator", desc: "Calculate the true cost of an employee including benefits, taxes, and overhead.", icon: <BarChart3 className="w-5 h-5 text-gold" /> },
   { cat: "Templates", title: "Attrition Cost Calculator", desc: "Understand the financial impact of employee turnover on your organisation.", icon: <BarChart3 className="w-5 h-5 text-violet" /> },
